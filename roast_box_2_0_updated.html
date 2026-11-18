@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Roast Box 2.0</title>
+<style>
+:root{--red:#ff2633;--bg:#080808;--panel:#151515;--muted:#bbb}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:#fff;font-family:Arial,Helvetica,sans-serif}
+header{min-height:72px;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:12px 5%;border-bottom:2px solid var(--red);background:#050505;position:sticky;top:0;z-index:5}
+.logo{font-size:24px;font-weight:1000;font-style:italic}.logo span{color:var(--red)}
+nav{display:flex;gap:22px;flex-wrap:wrap}nav a{color:#eee;text-decoration:none;font-weight:700}nav a:hover{color:var(--red)}
+button{cursor:pointer;font-weight:800}.login{border:1px solid var(--red);color:white;background:transparent;border-radius:22px;padding:10px 20px}
+.hero{min-height:310px;display:flex;align-items:center;padding:45px 8%;background:radial-gradient(ellipse at 85% 40%,#65080c 0,transparent 45%),linear-gradient(120deg,#160000,#050505 65%);border-bottom:1px solid #4b1013}
+.hero h1{font-size:clamp(42px,7vw,78px);line-height:.95;margin:0 0 14px;font-weight:1000;font-style:italic}.hero h1 span{color:var(--red)}
+.hero p{font-size:clamp(17px,2.4vw,24px);font-weight:800;font-style:italic}
+.primary{background:var(--red);color:white;border:0;border-radius:28px;padding:14px 25px;font-size:18px;box-shadow:0 0 20px #ff202b55}
+main{padding:26px 5%;display:grid;grid-template-columns:1fr 2fr 1.2fr;gap:20px}
+.panel{border:1px solid var(--red);border-radius:17px;background:linear-gradient(145deg,#191919,#090909);padding:21px}
+h2{font-size:24px;font-style:italic;margin:0 0 16px;text-transform:uppercase}
+.features ul{padding:0;list-style:none;line-height:2.1}.features li:before{content:"✓";color:var(--red);font-weight:bold;margin-right:12px}
+.warn{color:var(--red);font-weight:1000;font-style:italic;font-size:24px}
+.generator{grid-column:auto}.field{display:block;width:100%;background:#080808;color:white;border:1px solid #555;border-radius:9px;padding:12px;margin:8px 0 15px;font:inherit}
+textarea.field{min-height:85px;resize:vertical}.label{font-weight:700;color:#eee}
+.roast{font-size:21px;font-weight:800;font-style:italic;line-height:1.4;background:#080808;border:1px solid #292929;border-radius:13px;padding:22px;margin:12px 0;min-height:95px;display:grid;place-items:center;text-align:center}
+.secondary{background:#090909;border:2px solid var(--red);color:white;border-radius:25px;padding:12px 22px;font-size:15px}
+.note,.small{font-size:12px;color:#aaa;line-height:1.5}.leader ol{padding-left:24px;margin:0}.leader li{padding:9px 0;border-bottom:1px solid #292929}.score{float:right;color:#ffb52b}
+footer{border-top:2px solid var(--red);padding:20px 5%;display:flex;justify-content:space-between;gap:15px;color:#aaa}
+.modal-backdrop{display:none;position:fixed;inset:0;background:#000c;z-index:10;align-items:center;justify-content:center;padding:18px}
+.modal{width:min(430px,100%);background:#151515;border:1px solid var(--red);border-radius:17px;padding:24px;box-shadow:0 0 35px #ff202b44}
+.modal h2{margin-bottom:8px}.modal .field{margin-bottom:12px}.close{float:right;background:none;border:0;color:white;font-size:24px}
+.status{color:#ffb3b7;font-size:13px;min-height:20px}.modal-actions{display:flex;gap:10px;flex-wrap:wrap}
+@media(max-width:850px){main{grid-template-columns:1fr}.hero{min-height:260px}header{flex-wrap:wrap}nav{gap:12px}nav a{font-size:13px}.generator{order:0}}
+@media(max-width:520px){header{padding:12px 4%}.logo{font-size:20px}.hero{padding:35px 6%}footer{flex-direction:column}}
+</style>
+</head>
+<body>
+<header>
+ <div class="logo">🔥 ROAST BOX <span>2.0</span></div>
+ <nav><a href="#home">⌂ Home</a><a href="#generator">🎲 Roast Generator</a><a href="#leaderboard">🏆 Leaderboard</a><a href="#about">★ About</a></nav>
+ <button class="login" onclick="openLogin()">👤 Log in / Sign up</button>
+</header>
+<section class="hero" id="home"><div><h1>ROAST BOX <span>2.0</span></h1><p>GET ROASTED. LAUGH HARDER.</p><button class="primary" onclick="document.querySelector('#generator').scrollIntoView({behavior:'smooth'})">🎲 Make a Roast ↓</button></div></section>
+<main>
+ <section class="panel features"><h2>⭐ Features</h2><ul><li>Personalised Roasts</li><li>Roast Your Friends</li><li>Random Roasts</li><li>Leaderboard</li><li>More coming soon</li></ul><p class="warn">KEEP IT FUNNY.</p><p class="note">Roasts are meant to be silly jokes, not attacks. Don't use private information or target someone's identity, body, or anything they're sensitive about.</p></section>
+ <section class="panel generator" id="generator"><h2>🎲 Personal Roast Generator</h2>
+  <label class="label" for="personName">Who's getting roasted?</label><input class="field" id="personName" maxlength="30" placeholder="Enter a name (e.g. Alex)">
+  <label class="label" for="aboutPerson">Describe them (keep it light)</label><textarea class="field" id="aboutPerson" maxlength="180" placeholder="e.g. always late, loves gaming, takes 100 years to reply..."></textarea>
+  <button class="primary" onclick="makePersonalRoast()">🔥 Roast them</button>
+  <div class="roast" id="roastText" aria-live="polite">Your roast will appear here...</div>
+  <button class="secondary" onclick="randomRoast()">🎲 Random roast instead</button>
+  <p class="note">Tip: Use harmless habits and funny quirks. Avoid sensitive or personal details.</p>
+ </section>
+ <section class="panel leader" id="leaderboard"><h2>🏆 Top Roasters</h2><ol><li>RoastMaster69 <span class="score">🔥 9999</span></li><li>MemeLord <span class="score">🔥 8500</span></li><li>SigmaRoaster <span class="score">🔥 7200</span></li><li>GoofyRoaster <span class="score">🔥 6900</span></li><li>ChillRoaster <span class="score">🔥 6500</span></li></ol><p class="note">Sample leaderboard — accounts and scores aren't connected yet.</p></section>
+</main>
+<footer id="about"><div><strong>🔥 Roast Box <span style="color:#ff2633">2.0</span></strong>　|　 Roast. Laugh. Repeat.</div><div>Made with ❤️ by Roast Box</div></footer>
+
+<div class="modal-backdrop" id="loginBackdrop" role="dialog" aria-modal="true" aria-labelledby="loginTitle">
+ <div class="modal"><button class="close" onclick="closeLogin()" aria-label="Close">×</button><h2 id="loginTitle">👤 Welcome to Roast Box</h2>
+  <p class="note">The login screen is a preview. Real accounts need a secure sign-in service to be connected before anyone should enter a password.</p>
+  <label class="label" for="email">Email</label><input class="field" id="email" type="email" placeholder="you@example.com" autocomplete="email">
+  <label class="label" for="password">Password</label><input class="field" id="password" type="password" placeholder="Password" autocomplete="current-password">
+  <div class="modal-actions"><button class="primary" onclick="loginPreview()">Log in</button><button class="secondary" onclick="loginPreview()">Sign up</button></div>
+  <p class="status" id="loginStatus" aria-live="polite"></p>
+ </div>
+</div>
+<script>
+const randomRoasts=[
+"Your Wi-Fi is slower than a snail on a treadmill.",
+"You're the human version of a low-battery warning.",
+"Your gaming chair has more wins than you do.",
+"Your loading screen has a loading screen.",
+"Even your alarm clock has stopped believing in you.",
+"Your thumbs need a warm-up before sending a text.",
+"You're so late, tomorrow called asking where you are.",
+"Your playlist has more skips than a broken record."
+];
+const templates=[
+(n,d)=>`${n}, your ${d} has more personality than your alarm clock — and that thing only knows how to be annoying.`,
+(n,d)=>`Breaking news: ${n} is still ${d}. Experts say we'll have an update sometime next year.`,
+(n,d)=>`${n}, if ${d} were an Olympic sport, you'd win gold… after arriving late to the ceremony.`,
+(n,d)=>`${n} really said "${d}" and thought the world wasn't going to notice. Legendary confidence.`
+];
+function clean(s){return s.trim().replace(/[<>]/g,"").replace(/\s+/g," ")}
+function makePersonalRoast(){
+ const name=clean(document.getElementById('personName').value)||"You";
+ const detail=clean(document.getElementById('aboutPerson').value);
+ const out=document.getElementById('roastText');
+ if(!detail){out.textContent=`${name}, your Wi-Fi signal has more connection than your attention span.`;return;}
+ const safeDetail=detail.slice(0,100);
+ const t=templates[Math.floor(Math.random()*templates.length)];
+ out.textContent="“"+t(name,safeDetail)+"”";
+}
+function randomRoast(){document.getElementById('roastText').textContent="“"+randomRoasts[Math.floor(Math.random()*randomRoasts.length)]+"”";}
+function openLogin(){document.getElementById('loginBackdrop').style.display='flex';document.getElementById('loginStatus').textContent='';}
+function closeLogin(){document.getElementById('loginBackdrop').style.display='none';}
+function loginPreview(){document.getElementById('loginStatus').textContent='Login is not connected yet. Next we need to set up secure authentication — no password has been saved.';}
+document.getElementById('loginBackdrop').addEventListener('click',e=>{if(e.target.id==='loginBackdrop')closeLogin();});
+</script>
+</body></html>
