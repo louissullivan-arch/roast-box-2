@@ -97,8 +97,8 @@ function makePersonalRoast(){
 function randomRoast(){document.getElementById('roastText').textContent="“"+randomRoasts[Math.floor(Math.random()*randomRoasts.length)]+"”";}
 // Add your Supabase Project URL and publishable key below after creating the project.
 // The publishable key is safe to use in browser code. NEVER put a secret/service_role key here.
-const SUPABASE_URL = "YOUR_SUPABASE_PROJECT_URL";
-const SUPABASE_PUBLISHABLE_KEY = "YOUR_SUPABASE_PUBLISHABLE_KEY";
+const SUPABASE_URL = "https://qpffscdznslocjtresej.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_RQyWHBkHTHCQEPJrgxS4uA_FI3Tx3UY";
 let authClient = null;
 if (window.supabase && SUPABASE_URL.startsWith("https://") && !SUPABASE_URL.includes("YOUR_") && !SUPABASE_PUBLISHABLE_KEY.includes("YOUR_")) {
   authClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
