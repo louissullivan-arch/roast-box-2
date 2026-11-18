@@ -57,13 +57,16 @@ footer{border-top:2px solid var(--red);padding:20px 5%;display:flex;justify-cont
 
 <div class="modal-backdrop" id="loginBackdrop" role="dialog" aria-modal="true" aria-labelledby="loginTitle">
  <div class="modal"><button class="close" onclick="closeLogin()" aria-label="Close">×</button><h2 id="loginTitle">👤 Welcome to Roast Box</h2>
-  <p class="note">The login screen is a preview. Real accounts need a secure sign-in service to be connected before anyone should enter a password.</p>
+  <p class="note">Create an account with your email and your own password, or log in to an existing account.</p>
   <label class="label" for="email">Email</label><input class="field" id="email" type="email" placeholder="you@example.com" autocomplete="email">
-  <label class="label" for="password">Password</label><input class="field" id="password" type="password" placeholder="Password" autocomplete="current-password">
-  <div class="modal-actions"><button class="primary" onclick="loginPreview()">Log in</button><button class="secondary" onclick="loginPreview()">Sign up</button></div>
+  <label class="label" for="password">Password</label><input class="field" id="password" type="password" placeholder="At least 8 characters" autocomplete="current-password">
+  <div id="confirmWrap" style="display:none"><label class="label" for="confirmPassword">Confirm password</label><input class="field" id="confirmPassword" type="password" placeholder="Type your password again" autocomplete="new-password"></div>
+  <div class="modal-actions"><button class="primary" id="loginButton" onclick="loginUser()">Log in</button><button class="primary" id="signupButton" onclick="signupUser()" style="display:none">Create account</button></div><button class="secondary" id="switchMode" style="margin-top:10px" onclick="toggleAuthMode()">Need an account? Sign up</button>
   <p class="status" id="loginStatus" aria-live="polite"></p>
+  <p class="note" id="authModeNote">New here? Choose Create account. You'll receive an email confirmation if enabled.</p>
  </div>
 </div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 const randomRoasts=[
 "Your Wi-Fi is slower than a snail on a treadmill.",
@@ -92,9 +95,74 @@ function makePersonalRoast(){
  out.textContent="“"+t(name,safeDetail)+"”";
 }
 function randomRoast(){document.getElementById('roastText').textContent="“"+randomRoasts[Math.floor(Math.random()*randomRoasts.length)]+"”";}
-function openLogin(){document.getElementById('loginBackdrop').style.display='flex';document.getElementById('loginStatus').textContent='';}
+// Add your Supabase Project URL and publishable key below after creating the project.
+// The publishable key is safe to use in browser code. NEVER put a secret/service_role key here.
+const SUPABASE_URL = "YOUR_SUPABASE_PROJECT_URL";
+const SUPABASE_PUBLISHABLE_KEY = "YOUR_SUPABASE_PUBLISHABLE_KEY";
+let authClient = null;
+if (window.supabase && SUPABASE_URL.startsWith("https://") && !SUPABASE_URL.includes("YOUR_") && !SUPABASE_PUBLISHABLE_KEY.includes("YOUR_")) {
+  authClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+}
+function openLogin(){
+ document.getElementById('loginBackdrop').style.display='flex';
+ document.getElementById('loginStatus').textContent='';
+}
 function closeLogin(){document.getElementById('loginBackdrop').style.display='none';}
-function loginPreview(){document.getElementById('loginStatus').textContent='Login is not connected yet. Next we need to set up secure authentication — no password has been saved.';}
+function showAuthMessage(message){document.getElementById('loginStatus').textContent=message;}
+let signupMode=false;
+function toggleAuthMode(){signupMode=!signupMode;showSignupFields(signupMode);showAuthMessage('');}
+function showSignupFields(show){
+ signupMode=show;
+ document.getElementById('confirmWrap').style.display=show?'block':'none';
+ document.getElementById('password').autocomplete=show?'new-password':'current-password';
+ document.getElementById('loginButton').style.display=show?'none':'inline-block';
+ document.getElementById('signupButton').style.display=show?'inline-block':'none';
+ document.getElementById('authModeNote').textContent=show?'Create an account using your email and a password you choose.':'Log in with the email and password you used to sign up.';
+ document.getElementById('switchMode').textContent=show?'Already have an account? Log in':'Need an account? Sign up';
+}
+async function signupUser(){
+ if(!authClient){showAuthMessage('The account service is not connected yet. Add your Supabase project URL and publishable key in this file first.');return;}
+ const email=document.getElementById('email').value.trim();
+ const password=document.getElementById('password').value;
+ const confirm=document.getElementById('confirmPassword').value;
+ if(!email||!password){showAuthMessage('Enter your email and password.');return;}
+ if(password.length<8){showAuthMessage('Choose a password with at least 8 characters.');return;}
+ if(password!==confirm){showAuthMessage('Those passwords do not match.');return;}
+ showAuthMessage('Creating your account…');
+ const {data,error}=await authClient.auth.signUp({email,password,options:{emailRedirectTo:window.location.origin+window.location.pathname}});
+ if(error){showAuthMessage(error.message);return;}
+ showAuthMessage(data.session?'Account created! You are now logged in.':'Account created! Check your email for a confirmation link before logging in.');
+}
+async function loginUser(){
+ if(!authClient){showAuthMessage('The account service is not connected yet. Add your Supabase project URL and publishable key in this file first.');return;}
+ const email=document.getElementById('email').value.trim();
+ const password=document.getElementById('password').value;
+ if(!email||!password){showAuthMessage('Enter your email and password.');return;}
+ showAuthMessage('Logging in…');
+ const {data,error}=await authClient.auth.signInWithPassword({email,password});
+ if(error){showAuthMessage(error.message);return;}
+ showAuthMessage('You are logged in as '+data.user.email+'.');
+ setTimeout(closeLogin,1200);
+}
+async function logoutUser(){
+ if(!authClient)return;
+ const {error}=await authClient.auth.signOut();
+ if(error){alert(error.message);return;}
+ alert('You have been logged out.');
+}
+if(authClient){
+ authClient.auth.getSession().then(({data})=>{
+  const button=document.querySelector('.login');
+  if(data.session){button.textContent='👤 '+(data.session.user.email||'Account');button.onclick=logoutUser;}
+ });
+ authClient.auth.onAuthStateChange((_event,session)=>{
+  const button=document.querySelector('.login');
+  if(session){button.textContent='👤 '+(session.user.email||'Account');button.onclick=logoutUser;}
+  else{button.textContent='👤 Log in / Sign up';button.onclick=openLogin;}
+ });
+}
 document.getElementById('loginBackdrop').addEventListener('click',e=>{if(e.target.id==='loginBackdrop')closeLogin();});
+showSignupFields(false);
+
 </script>
 </body></html>
