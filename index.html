@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Roast Box 2.0</title>
+<title>Roast Bot 3.0</title>
 <style>
 :root{--red:#ff2633;--bg:#080808;--panel:#151515;--muted:#bbb}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:#fff;font-family:Arial,Helvetica,sans-serif}
@@ -49,8 +49,62 @@ footer{border-top:2px solid var(--red);padding:20px 5%;display:flex;justify-cont
   <button class="primary" onclick="makePersonalRoast()">🔥 Roast them</button>
   <div class="roast" id="roastText" aria-live="polite">Your roast will appear here...</div>
   <button class="secondary" onclick="randomRoast()">🎲 Random roast instead</button>
+  
+function replyToInsult(){
+ const input=document.getElementById('insultInput');
+ const output=document.getElementById('comebackReply');
+ const level=document.getElementById('roastLevel').value;
+ if(!input.value.trim()){
+  output.textContent="Type something first 💀";
+  return;
+ }
+ const replies={
+  normal:[
+   "That insult needs a software update.",
+   "I've heard loading screens with better comebacks.",
+   "Was that an insult or a Wi-Fi error?"
+  ],
+  savage:[
+   "Your comeback was so weak, autocorrect tried to replace it.",
+   "You bring the energy of a phone on 1%.",
+   "Even your shadow needs personal space.",
+   "Your roast has less impact than a silent alarm.",
+   "That insult needs a rescue team."
+  ],
+  nuclear:[
+   "Your brain has a terms and conditions page nobody has read.",
+   "You have the confidence of a final boss and the skills of the tutorial NPC.",
+   "Your comeback was so cooked the fire alarm called the fire department.",
+   "If common sense was Wi-Fi, you'd have no signal.",
+   "You just lost an argument to a website. Let that sink in."
+  ]
+ };
+ const list=replies[level];
+ output.textContent="💀 "+list[Math.floor(Math.random()*list.length)];
+}
+
   <p class="note">Tip: Use harmless habits and funny quirks. Avoid sensitive or personal details.</p>
  </section>
+ 
+<section class="panel" id="roastbot">
+<h2>🤖 ROAST BOT 3.0</h2>
+<p class="note">Choose your destruction level 💀</p>
+
+<label class="label" for="roastLevel">Roast level</label>
+<select class="field" id="roastLevel">
+<option value="normal">🔥 Normal</option>
+<option value="savage">💀 Savage</option>
+<option value="nuclear">☢️ Nuclear</option>
+</select>
+
+<label class="label" for="insultInput">What did they say to you?</label>
+<input class="field" id="insultInput" placeholder="Type their insult...">
+
+<button class="primary" onclick="replyToInsult()">🔥 FIRE BACK</button>
+
+<div class="roast" id="comebackReply">Your comeback appears here...</div>
+</section>
+
  <section class="panel leader" id="leaderboard"><h2>🏆 Top Roasters</h2><ol><li>RoastMaster69 <span class="score">🔥 9999</span></li><li>MemeLord <span class="score">🔥 8500</span></li><li>SigmaRoaster <span class="score">🔥 7200</span></li><li>GoofyRoaster <span class="score">🔥 6900</span></li><li>ChillRoaster <span class="score">🔥 6500</span></li></ol><p class="note">Sample leaderboard — accounts and scores aren't connected yet.</p></section>
 </main>
 <footer id="about"><div><strong>🔥 Roast Box <span style="color:#ff2633">2.0</span></strong>　|　 Roast. Laugh. Repeat.</div><div>Made with ❤️ by Roast Box</div></footer>
