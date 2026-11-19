@@ -40,73 +40,39 @@ footer{border-top:2px solid var(--red);padding:20px 5%;display:flex;justify-cont
  <nav><a href="#home">⌂ Home</a><a href="#generator">🎲 Roast Generator</a><a href="#leaderboard">🏆 Leaderboard</a><a href="#about">★ About</a></nav>
  <button class="login" onclick="openLogin()">👤 Log in / Sign up</button>
 </header>
+
 <section class="hero" id="home"><div><h1>ROAST BOX <span>2.0</span></h1><p>GET ROASTED. LAUGH HARDER.</p><button class="primary" onclick="document.querySelector('#generator').scrollIntoView({behavior:'smooth'})">🎲 Make a Roast ↓</button></div></section>
+
 <main>
  <section class="panel features"><h2>⭐ Features</h2><ul><li>Personalised Roasts</li><li>Roast Your Friends</li><li>Random Roasts</li><li>Leaderboard</li><li>More coming soon</li></ul><p class="warn">KEEP IT FUNNY.</p><p class="note">Roasts are meant to be silly jokes, not attacks. Don't use private information or target someone's identity, body, or anything they're sensitive about.</p></section>
+
  <section class="panel generator" id="generator"><h2>🎲 Personal Roast Generator</h2>
   <label class="label" for="personName">Who's getting roasted?</label><input class="field" id="personName" maxlength="30" placeholder="Enter a name (e.g. Alex)">
   <label class="label" for="aboutPerson">Describe them (keep it light)</label><textarea class="field" id="aboutPerson" maxlength="180" placeholder="e.g. always late, loves gaming, takes 100 years to reply..."></textarea>
   <button class="primary" onclick="makePersonalRoast()">🔥 Roast them</button>
   <div class="roast" id="roastText" aria-live="polite">Your roast will appear here...</div>
   <button class="secondary" onclick="randomRoast()">🎲 Random roast instead</button>
-  
-function replyToInsult(){
- const input=document.getElementById('insultInput');
- const output=document.getElementById('comebackReply');
- const level=document.getElementById('roastLevel').value;
- if(!input.value.trim()){
-  output.textContent="Type something first 💀";
-  return;
- }
- const replies={
-  normal:[
-   "That insult needs a software update.",
-   "I've heard loading screens with better comebacks.",
-   "Was that an insult or a Wi-Fi error?"
-  ],
-  savage:[
-   "Your comeback was so weak, autocorrect tried to replace it.",
-   "You bring the energy of a phone on 1%.",
-   "Even your shadow needs personal space.",
-   "Your roast has less impact than a silent alarm.",
-   "That insult needs a rescue team."
-  ],
-  nuclear:[
-   "Your brain has a terms and conditions page nobody has read.",
-   "You have the confidence of a final boss and the skills of the tutorial NPC.",
-   "Your comeback was so cooked the fire alarm called the fire department.",
-   "If common sense was Wi-Fi, you'd have no signal.",
-   "You just lost an argument to a website. Let that sink in."
-  ]
- };
- const list=replies[level];
- output.textContent="💀 "+list[Math.floor(Math.random()*list.length)];
-}
-
   <p class="note">Tip: Use harmless habits and funny quirks. Avoid sensitive or personal details.</p>
  </section>
- 
+
 <section class="panel" id="roastbot">
 <h2>🤖 ROAST BOT 3.0</h2>
 <p class="note">Choose your destruction level 💀</p>
-
 <label class="label" for="roastLevel">Roast level</label>
 <select class="field" id="roastLevel">
 <option value="normal">🔥 Normal</option>
 <option value="savage">💀 Savage</option>
 <option value="nuclear">☢️ Nuclear</option>
 </select>
-
 <label class="label" for="insultInput">What did they say to you?</label>
 <input class="field" id="insultInput" placeholder="Type their insult...">
-
 <button class="primary" onclick="replyToInsult()">🔥 FIRE BACK</button>
-
 <div class="roast" id="comebackReply">Your comeback appears here...</div>
 </section>
 
  <section class="panel leader" id="leaderboard"><h2>🏆 Top Roasters</h2><ol><li>RoastMaster69 <span class="score">🔥 9999</span></li><li>MemeLord <span class="score">🔥 8500</span></li><li>SigmaRoaster <span class="score">🔥 7200</span></li><li>GoofyRoaster <span class="score">🔥 6900</span></li><li>ChillRoaster <span class="score">🔥 6500</span></li></ol><p class="note">Sample leaderboard — accounts and scores aren't connected yet.</p></section>
 </main>
+
 <footer id="about"><div><strong>🔥 Roast Box <span style="color:#ff2633">2.0</span></strong>　|　 Roast. Laugh. Repeat.</div><div>Made with ❤️ by Roast Box</div></footer>
 
 <div class="modal-backdrop" id="loginBackdrop" role="dialog" aria-modal="true" aria-labelledby="loginTitle">
@@ -120,6 +86,7 @@ function replyToInsult(){
   <p class="note" id="authModeNote">New here? Choose Create account. You'll receive an email confirmation if enabled.</p>
  </div>
 </div>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 const randomRoasts=[
@@ -324,13 +291,151 @@ const randomRoasts=[
 "Your confidence could power a small town.",
 "Your logic is doing parkour around the point."
 ];
+
 const templates=[
 (n,d)=>`${n}, your ${d} has more personality than your alarm clock — and that thing only knows how to be annoying.`,
 (n,d)=>`Breaking news: ${n} is still ${d}. Experts say we'll have an update sometime next year.`,
 (n,d)=>`${n}, if ${d} were an Olympic sport, you'd win gold… after arriving late to the ceremony.`,
 (n,d)=>`${n} really said "${d}" and thought the world wasn't going to notice. Legendary confidence.`
 ];
+
+/* COMEBACK BOT */
+function replyToInsult(){
+  const input = document.getElementById('insultInput');
+  const output = document.getElementById('comebackReply');
+  const level = document.getElementById('roastLevel').value;
+  const text = input.value.trim();
+
+  if(!text){
+    output.textContent = "Type something first 💀";
+    return;
+  }
+
+  const letters = text.replace(/[^a-z]/gi, "");
+  const vowels = (letters.match(/[aeiou]/gi) || []).length;
+
+  if(/^(.)\1{5,}$/i.test(text) || (letters.length >= 8 && vowels <= 1)){
+    output.textContent = "💀 Bro typed a Wi-Fi password and called it an insult.";
+    return;
+  }
+
+  if(letters.length < 2){
+    output.textContent = "💀 Your keyboard sent a mystery signal. Try an actual sentence.";
+    return;
+  }
+
+  const lower = text.toLowerCase();
+
+  const groups = [
+    {
+      words: ["stupid","dumb","idiot","brain","think","smart"],
+      normal: [
+        "That insult needs a thinking cap.",
+        "Interesting take. Did you workshop that with a potato?",
+        "I would explain my point, but your insult hasn't caught up yet."
+      ],
+      savage: [
+        "You called me dumb, but your insult arrived without a brain cell.",
+        "That was a bold comment from someone whose argument is still buffering.",
+        "Your insult has the intellectual horsepower of an unplugged toaster."
+      ],
+      nuclear: [
+        "You tried to question my intelligence with a sentence that needs adult supervision.",
+        "That insult was so undercooked it came with a recipe.",
+        "Your argument just tripped over its own shoelaces."
+      ]
+    },
+    {
+      words: ["bad","trash","suck","terrible","worst","fail"],
+      normal: [
+        "Thanks for the review. Your feedback has been filed under 'not useful'.",
+        "That's a strong opinion for such a tiny argument.",
+        "I'll give that insult another try when it gets an upgrade."
+      ],
+      savage: [
+        "Your insult is the only thing here that deserves a one-star review.",
+        "You brought a participation trophy to a roast battle.",
+        "That comeback fell over before it reached me."
+      ],
+      nuclear: [
+        "Your insult has been rejected by the quality-control department.",
+        "Even the delete button wanted nothing to do with that sentence.",
+        "That roast was so weak the microwave didn't even warm up."
+      ]
+    },
+    {
+      words: ["ugly","look","face","hair","clothes","wear"],
+      normal: [
+        "We're discussing comebacks, not auditioning for a fashion show.",
+        "Nice attempt. Got an actual argument?",
+        "That comment needs a personality update."
+      ],
+      savage: [
+        "You changed the subject because your argument ran out of battery.",
+        "That was a detour, not a comeback.",
+        "Try roasting the point next time. It might go better."
+      ],
+      nuclear: [
+        "You went after appearances because your argument had absolutely nothing left.",
+        "That comment took the scenic route around having a point.",
+        "If changing the subject were a sport, you'd finally have a strategy."
+      ]
+    },
+    {
+      words: ["slow","loser","noob","bad","game","gaming","play","aim"],
+      normal: [
+        "My loading screen has a better comeback than that.",
+        "That roast missed harder than a laggy game character.",
+        "You just unlocked the tutorial-level insult."
+      ],
+      savage: [
+        "Your insult has the accuracy of a controller with no batteries.",
+        "That comeback got eliminated before the first round.",
+        "Even the NPCs are asking you to try again."
+      ],
+      nuclear: [
+        "Your roast missed so badly the game added a new map.",
+        "That insult has less impact than pressing pause in a loading screen.",
+        "You brought tutorial energy to the final boss conversation."
+      ]
+    }
+  ];
+
+  const generic = {
+    normal: [
+      "That insult needs a software update.",
+      "Was that an insult or a Wi-Fi error?",
+      "I've heard loading screens with better comebacks.",
+      "Thanks for sharing. The point is still missing."
+    ],
+    savage: [
+      "Your comeback was so weak, autocorrect tried to replace it.",
+      "That insult has less impact than a silent notification.",
+      "You brought a spoon to a roast battle.",
+      "Even your shadow needs a minute to recover from that attempt."
+    ],
+    nuclear: [
+      "Your insult has a terms-and-conditions page nobody wants to read.",
+      "You have final-boss confidence and tutorial-level material.",
+      "That comeback was so cooked the fire alarm filed a complaint.",
+      "You just lost an argument to a website. Let that sink in."
+    ]
+  };
+
+  let matches = groups.filter(group =>
+    group.words.some(word => new RegExp("\\b" + word + "\\b", "i").test(lower))
+  );
+
+  let pool = matches.length
+    ? matches.flatMap(group => group[level])
+    : generic[level];
+
+  const reply = pool[Math.floor(Math.random() * pool.length)];
+  output.textContent = "💀 " + reply;
+}
+
 function clean(s){return s.trim().replace(/[<>]/g,"").replace(/\s+/g," ")}
+
 function makePersonalRoast(){
  const name=clean(document.getElementById('personName').value)||"You";
  const detail=clean(document.getElementById('aboutPerson').value);
@@ -340,23 +445,42 @@ function makePersonalRoast(){
  const t=templates[Math.floor(Math.random()*templates.length)];
  out.textContent="“"+t(name,safeDetail)+"”";
 }
-function randomRoast(){document.getElementById('roastText').textContent="“"+randomRoasts[Math.floor(Math.random()*randomRoasts.length)]+"”";}
-// Add your Supabase Project URL and publishable key below after creating the project.
-// The publishable key is safe to use in browser code. NEVER put a secret/service_role key here.
+
+function randomRoast(){
+ document.getElementById('roastText').textContent="“"+randomRoasts[Math.floor(Math.random()*randomRoasts.length)]+"”";
+}
+
+// SUPABASE LOGIN SYSTEM — KEEP YOUR EXISTING SETTINGS
 const SUPABASE_URL = "https://qpffscdznslocjtresej.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_RQyWHBkHTHCQEPJrgxS4uA_FI3Tx3UY";
+
 let authClient = null;
+
 if (window.supabase && SUPABASE_URL.startsWith("https://") && !SUPABASE_URL.includes("YOUR_") && !SUPABASE_PUBLISHABLE_KEY.includes("YOUR_")) {
   authClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 }
+
 function openLogin(){
  document.getElementById('loginBackdrop').style.display='flex';
  document.getElementById('loginStatus').textContent='';
 }
-function closeLogin(){document.getElementById('loginBackdrop').style.display='none';}
-function showAuthMessage(message){document.getElementById('loginStatus').textContent=message;}
+
+function closeLogin(){
+ document.getElementById('loginBackdrop').style.display='none';
+}
+
+function showAuthMessage(message){
+ document.getElementById('loginStatus').textContent=message;
+}
+
 let signupMode=false;
-function toggleAuthMode(){signupMode=!signupMode;showSignupFields(signupMode);showAuthMessage('');}
+
+function toggleAuthMode(){
+ signupMode=!signupMode;
+ showSignupFields(signupMode);
+ showAuthMessage('');
+}
+
 function showSignupFields(show){
  signupMode=show;
  document.getElementById('confirmWrap').style.display=show?'block':'none';
@@ -366,6 +490,7 @@ function showSignupFields(show){
  document.getElementById('authModeNote').textContent=show?'Create an account using your email and a password you choose.':'Log in with the email and password you used to sign up.';
  document.getElementById('switchMode').textContent=show?'Already have an account? Log in':'Need an account? Sign up';
 }
+
 async function signupUser(){
  if(!authClient){showAuthMessage('The account service is not connected yet. Add your Supabase project URL and publishable key in this file first.');return;}
  const email=document.getElementById('email').value.trim();
@@ -379,6 +504,7 @@ async function signupUser(){
  if(error){showAuthMessage(error.message);return;}
  showAuthMessage(data.session?'Account created! You are now logged in.':'Account created! Check your email for a confirmation link before logging in.');
 }
+
 async function loginUser(){
  if(!authClient){showAuthMessage('The account service is not connected yet. Add your Supabase project URL and publishable key in this file first.');return;}
  const email=document.getElementById('email').value.trim();
@@ -390,12 +516,14 @@ async function loginUser(){
  showAuthMessage('You are logged in as '+data.user.email+'.');
  setTimeout(closeLogin,1200);
 }
+
 async function logoutUser(){
  if(!authClient)return;
  const {error}=await authClient.auth.signOut();
  if(error){alert(error.message);return;}
  alert('You have been logged out.');
 }
+
 if(authClient){
  authClient.auth.getSession().then(({data})=>{
   const button=document.querySelector('.login');
@@ -407,8 +535,12 @@ if(authClient){
   else{button.textContent='👤 Log in / Sign up';button.onclick=openLogin;}
  });
 }
-document.getElementById('loginBackdrop').addEventListener('click',e=>{if(e.target.id==='loginBackdrop')closeLogin();});
-showSignupFields(false);
 
+document.getElementById('loginBackdrop').addEventListener('click',e=>{
+ if(e.target.id==='loginBackdrop')closeLogin();
+});
+
+showSignupFields(false);
 </script>
-</body></html>
+</body>
+</html>
