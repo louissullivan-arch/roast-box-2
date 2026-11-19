@@ -68,6 +68,7 @@ footer{border-top:2px solid var(--red);padding:20px 5%;display:flex;justify-cont
 <input class="field" id="insultInput" placeholder="Type their insult...">
 <button class="primary" onclick="replyToInsult()">🔥 FIRE BACK</button>
 <div class="roast" id="comebackReply">Your comeback appears here...</div>
+<p class="note">Free browser AI. The model downloads on first use, so the first comeback may take a while. No API key required.</p>
 </section>
 
  <section class="panel leader" id="leaderboard"><h2>🏆 Top Roasters</h2><ol><li>RoastMaster69 <span class="score">🔥 9999</span></li><li>MemeLord <span class="score">🔥 8500</span></li><li>SigmaRoaster <span class="score">🔥 7200</span></li><li>GoofyRoaster <span class="score">🔥 6900</span></li><li>ChillRoaster <span class="score">🔥 6500</span></li></ol><p class="note">Sample leaderboard — accounts and scores aren't connected yet.</p></section>
@@ -299,139 +300,98 @@ const templates=[
 (n,d)=>`${n} really said "${d}" and thought the world wasn't going to notice. Legendary confidence.`
 ];
 
-/* COMEBACK BOT */
-function replyToInsult(){
-  const input = document.getElementById('insultInput');
-  const output = document.getElementById('comebackReply');
-  const level = document.getElementById('roastLevel').value;
-  const text = input.value.trim();
+/* FREE BROWSER-BASED AI COMEBACK BOT
+   No OpenAI API key and no paid API calls.
+   The model downloads into the visitor's browser the first time it is used.
+*/
+let comebackModelPromise = null;
 
-  if(!text){
+async function loadComebackModel(output) {
+  if (!comebackModelPromise) {
+    output.textContent = "🤖 Loading the free AI model… first use may take a while.";
+    comebackModelPromise = (async () => {
+      const { pipeline, env } = await import(
+        "https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.7.2"
+      );
+      env.allowLocalModels = false;
+      env.useBrowserCache = true;
+
+      const device = (navigator.gpu && window.isSecureContext) ? "webgpu" : "wasm";
+      return await pipeline(
+        "text-generation",
+        "onnx-community/Qwen2.5-0.5B-Instruct",
+        { device, dtype: "q4" }
+      );
+    })().catch(error => {
+      comebackModelPromise = null;
+      throw error;
+    });
+  }
+  return await comebackModelPromise;
+}
+
+async function replyToInsult() {
+  const input = document.getElementById("insultInput");
+  const output = document.getElementById("comebackReply");
+  const button = document.querySelector('#roastbot button.primary');
+  const level = document.getElementById("roastLevel").value;
+  const insult = input.value.trim();
+
+  if (!insult) {
     output.textContent = "Type something first 💀";
     return;
   }
 
-  const letters = text.replace(/[^a-z]/gi, "");
-  const vowels = (letters.match(/[aeiou]/gi) || []).length;
-
-  if(/^(.)\1{5,}$/i.test(text) || (letters.length >= 8 && vowels <= 1)){
-    output.textContent = "💀 Bro typed a Wi-Fi password and called it an insult.";
+  if (insult.length > 300) {
+    output.textContent = "Keep the insult under 300 characters.";
     return;
   }
 
-  if(letters.length < 2){
-    output.textContent = "💀 Your keyboard sent a mystery signal. Try an actual sentence.";
-    return;
-  }
+  if (button) button.disabled = true;
+  output.textContent = "💀 Thinking of a comeback…";
 
-  const lower = text.toLowerCase();
-
-  const groups = [
-    {
-      words: ["stupid","dumb","idiot","brain","think","smart"],
-      normal: [
-        "That insult needs a thinking cap.",
-        "Interesting take. Did you workshop that with a potato?",
-        "I would explain my point, but your insult hasn't caught up yet."
-      ],
-      savage: [
-        "You called me dumb, but your insult arrived without a brain cell.",
-        "That was a bold comment from someone whose argument is still buffering.",
-        "Your insult has the intellectual horsepower of an unplugged toaster."
-      ],
-      nuclear: [
-        "You tried to question my intelligence with a sentence that needs adult supervision.",
-        "That insult was so undercooked it came with a recipe.",
-        "Your argument just tripped over its own shoelaces."
-      ]
-    },
-    {
-      words: ["bad","trash","suck","terrible","worst","fail"],
-      normal: [
-        "Thanks for the review. Your feedback has been filed under 'not useful'.",
-        "That's a strong opinion for such a tiny argument.",
-        "I'll give that insult another try when it gets an upgrade."
-      ],
-      savage: [
-        "Your insult is the only thing here that deserves a one-star review.",
-        "You brought a participation trophy to a roast battle.",
-        "That comeback fell over before it reached me."
-      ],
-      nuclear: [
-        "Your insult has been rejected by the quality-control department.",
-        "Even the delete button wanted nothing to do with that sentence.",
-        "That roast was so weak the microwave didn't even warm up."
-      ]
-    },
-    {
-      words: ["ugly","look","face","hair","clothes","wear"],
-      normal: [
-        "We're discussing comebacks, not auditioning for a fashion show.",
-        "Nice attempt. Got an actual argument?",
-        "That comment needs a personality update."
-      ],
-      savage: [
-        "You changed the subject because your argument ran out of battery.",
-        "That was a detour, not a comeback.",
-        "Try roasting the point next time. It might go better."
-      ],
-      nuclear: [
-        "You went after appearances because your argument had absolutely nothing left.",
-        "That comment took the scenic route around having a point.",
-        "If changing the subject were a sport, you'd finally have a strategy."
-      ]
-    },
-    {
-      words: ["slow","loser","noob","bad","game","gaming","play","aim"],
-      normal: [
-        "My loading screen has a better comeback than that.",
-        "That roast missed harder than a laggy game character.",
-        "You just unlocked the tutorial-level insult."
-      ],
-      savage: [
-        "Your insult has the accuracy of a controller with no batteries.",
-        "That comeback got eliminated before the first round.",
-        "Even the NPCs are asking you to try again."
-      ],
-      nuclear: [
-        "Your roast missed so badly the game added a new map.",
-        "That insult has less impact than pressing pause in a loading screen.",
-        "You brought tutorial energy to the final boss conversation."
-      ]
-    }
-  ];
-
-  const generic = {
-    normal: [
-      "That insult needs a software update.",
-      "Was that an insult or a Wi-Fi error?",
-      "I've heard loading screens with better comebacks.",
-      "Thanks for sharing. The point is still missing."
-    ],
-    savage: [
-      "Your comeback was so weak, autocorrect tried to replace it.",
-      "That insult has less impact than a silent notification.",
-      "You brought a spoon to a roast battle.",
-      "Even your shadow needs a minute to recover from that attempt."
-    ],
-    nuclear: [
-      "Your insult has a terms-and-conditions page nobody wants to read.",
-      "You have final-boss confidence and tutorial-level material.",
-      "That comeback was so cooked the fire alarm filed a complaint.",
-      "You just lost an argument to a website. Let that sink in."
-    ]
+  const levelInstructions = {
+    normal: "Make it witty and playful, not too harsh.",
+    savage: "Make it sharp, clever and confidently savage, but not cruel.",
+    nuclear: "Make it dramatically savage and hilarious, but avoid threats, slurs, identity attacks, appearance attacks, or genuinely hurtful content."
   };
 
-  let matches = groups.filter(group =>
-    group.words.some(word => new RegExp("\\b" + word + "\\b", "i").test(lower))
-  );
+  try {
+    const generator = await loadComebackModel(output);
+    output.textContent = "🔥 AI is writing your comeback…";
 
-  let pool = matches.length
-    ? matches.flatMap(group => group[level])
-    : generic[level];
+    const prompt =
+      "You write short, funny comebacks for a friendly roast battle. " +
+      levelInstructions[level] + " " +
+      "Reply to the following insult with ONE original comeback. " +
+      "Use one or two sentences maximum. Do not explain your answer. " +
+      "Do not use threats, slurs, private information, or attacks on protected traits. " +
+      "Insult to reply to: " + insult + "\nComeback:";
 
-  const reply = pool[Math.floor(Math.random() * pool.length)];
-  output.textContent = "💀 " + reply;
+    const result = await generator(prompt, {
+      max_new_tokens: 75,
+      temperature: 0.85,
+      do_sample: true,
+      return_full_text: false
+    });
+
+    let reply = result?.[0]?.generated_text;
+    if (typeof reply !== "string" || !reply.trim()) {
+      throw new Error("The model returned an empty reply.");
+    }
+
+    reply = reply.trim()
+      .replace(/^["'“”]+|["'“”]+$/g, "")
+      .replace(/^(comeback:)\s*/i, "");
+
+    output.textContent = "💀 " + reply;
+  } catch (error) {
+    console.error("Comeback AI error:", error);
+    output.textContent =
+      "Couldn't load the free AI model. Check your internet connection, refresh, and try again. If it keeps failing, this Chromebook may not support the model.";
+  } finally {
+    if (button) button.disabled = false;
+  }
 }
 
 function clean(s){return s.trim().replace(/[<>]/g,"").replace(/\s+/g," ")}
